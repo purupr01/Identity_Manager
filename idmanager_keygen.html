@@ -1,0 +1,275 @@
+
+<h2 class="sr-only">Identity Manager activation key generator with random keys per duration</h2>
+
+<style>
+  .kg-root { padding: 1.5rem 0; font-family: var(--font-sans); }
+  .kg-header { background: #0F2D5E; color: #fff; border-radius: var(--border-radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 12px; }
+  .kg-header-icon { font-size: 28px; }
+  .kg-header-title { font-size: 18px; font-weight: 500; margin: 0 0 2px; }
+  .kg-header-sub { font-size: 13px; color: #93C5FD; margin: 0; }
+  .kg-section { margin-bottom: 1.5rem; }
+  .kg-section-label { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .kg-presets { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+  .kg-preset-btn { border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); border-radius: var(--border-radius-md); padding: 10px 8px; text-align: center; cursor: pointer; transition: all 0.15s; }
+  .kg-preset-btn:hover { background: var(--color-background-secondary); border-color: #1D6FD8; }
+  .kg-preset-btn.active { background: #EBF3FF; border-color: #1D6FD8; }
+  .kg-preset-days { font-size: 18px; font-weight: 500; color: #1D6FD8; }
+  .kg-preset-label { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+  .kg-custom-row { display: flex; gap: 8px; align-items: center; }
+  .kg-custom-row input { flex: 1; }
+  .kg-generate-btn { background: #1D6FD8; color: #fff; border: none; border-radius: var(--border-radius-md); padding: 10px 20px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; width: 100%; justify-content: center; margin-top: 1rem; transition: background 0.15s; }
+  .kg-generate-btn:hover { background: #1558B0; }
+  .kg-generate-btn:active { transform: scale(0.98); }
+  .kg-result { display: none; background: var(--color-background-secondary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-lg); padding: 1.25rem 1.5rem; margin-top: 1.25rem; }
+  .kg-result.visible { display: block; }
+  .kg-result-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 0.5px solid var(--color-border-tertiary); font-size: 13px; }
+  .kg-result-row:last-child { border-bottom: none; }
+  .kg-result-key { font-size: 14px; }
+  .kg-code-block { background: #0F172A; border-radius: var(--border-radius-md); padding: 1rem 1.25rem; margin: 0.75rem 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .kg-code { font-family: var(--font-mono); font-size: 17px; color: #10d98a; letter-spacing: 0.05em; }
+  .kg-copy-btn { background: #1D6FD8; color: #fff; border: none; border-radius: var(--border-radius-md); padding: 6px 14px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+  .kg-copy-btn.copied { background: #0D7A6B; }
+  .kg-verify-section { border-top: 0.5px solid var(--color-border-tertiary); margin-top: 1.25rem; padding-top: 1.25rem; }
+  .kg-verify-row { display: flex; gap: 8px; }
+  .kg-verify-row input { flex: 1; font-family: var(--font-mono); }
+  .kg-verify-btn { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 8px 16px; cursor: pointer; font-size: 13px; white-space: nowrap; }
+  .kg-verify-btn:hover { background: var(--color-background-primary); }
+  .kg-verify-result { margin-top: 8px; font-size: 13px; padding: 8px 12px; border-radius: var(--border-radius-md); display: none; }
+  .kg-verify-result.valid { display: block; background: #DCFCE7; color: #166534; }
+  .kg-verify-result.invalid { display: block; background: #FEE2E2; color: #991B1B; }
+  .kg-history { margin-top: 1.25rem; }
+  .kg-history-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 0.5px solid var(--color-border-tertiary); font-size: 12px; gap: 8px; }
+  .kg-history-item:last-child { border-bottom: none; }
+  .kg-history-code { font-family: var(--font-mono); font-size: 12px; color: var(--color-text-primary); }
+  .kg-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; }
+  .kg-badge-blue { background: #EBF3FF; color: #1558B0; }
+  .kg-sep { border: none; border-top: 0.5px solid var(--color-border-tertiary); margin: 1.25rem 0; }
+</style>
+
+<div class="kg-root">
+  <div class="kg-header">
+    <div class="kg-header-icon" aria-hidden="true"><i class="ti ti-key" style="font-size:28px;"></i></div>
+    <div>
+      <p class="kg-header-title">Identity Manager — Activation Key Generator</p>
+      <p class="kg-header-sub">ITProAcademy.co.in · Each generated key is unique and random</p>
+    </div>
+  </div>
+
+  <div class="kg-section">
+    <div class="kg-section-label">Select duration</div>
+    <div class="kg-presets" id="presets">
+      <div class="kg-preset-btn active" data-days="30" onclick="selectPreset(this)"><div class="kg-preset-days">30</div><div class="kg-preset-label">Trial / 1 month</div></div>
+      <div class="kg-preset-btn" data-days="90" onclick="selectPreset(this)"><div class="kg-preset-days">90</div><div class="kg-preset-label">3 months</div></div>
+      <div class="kg-preset-btn" data-days="180" onclick="selectPreset(this)"><div class="kg-preset-days">180</div><div class="kg-preset-label">6 months</div></div>
+      <div class="kg-preset-btn" data-days="365" onclick="selectPreset(this)"><div class="kg-preset-days">365</div><div class="kg-preset-label">1 year</div></div>
+      <div class="kg-preset-btn" data-days="730" onclick="selectPreset(this)"><div class="kg-preset-days">730</div><div class="kg-preset-label">2 years</div></div>
+      <div class="kg-preset-btn" data-days="3650" onclick="selectPreset(this)"><div class="kg-preset-days">3650</div><div class="kg-preset-label">Lifetime</div></div>
+    </div>
+  </div>
+
+  <div class="kg-section">
+    <div class="kg-section-label">Or enter custom days</div>
+    <div class="kg-custom-row">
+      <input type="number" id="custom-days" min="1" max="9999" placeholder="e.g. 45" oninput="onCustomInput()" />
+      <span style="font-size:13px; color:var(--color-text-secondary); white-space:nowrap;">days</span>
+    </div>
+  </div>
+
+  <button class="kg-generate-btn" onclick="generateKey()">
+    <i class="ti ti-key" aria-hidden="true"></i> Generate unique activation key
+  </button>
+
+  <div class="kg-result" id="result">
+    <div class="kg-result-row">
+      <span style="color:var(--color-text-secondary);">Product</span>
+      <span class="kg-result-key">Identity Manager</span>
+    </div>
+    <div class="kg-result-row">
+      <span style="color:var(--color-text-secondary);">Vendor</span>
+      <span class="kg-result-key">ITProAcademy.co.in</span>
+    </div>
+    <div class="kg-result-row">
+      <span style="color:var(--color-text-secondary);">Duration</span>
+      <span class="kg-result-key" id="r-duration">—</span>
+    </div>
+    <div class="kg-result-row">
+      <span style="color:var(--color-text-secondary);">Issued</span>
+      <span class="kg-result-key" id="r-issued">—</span>
+    </div>
+    <div class="kg-result-row">
+      <span style="color:var(--color-text-secondary);">Expires</span>
+      <span class="kg-result-key" id="r-expires">—</span>
+    </div>
+
+    <div class="kg-code-block" id="code-block">
+      <span class="kg-code" id="r-code">—</span>
+      <button class="kg-copy-btn" id="copy-btn" onclick="copyCode()">
+        <i class="ti ti-copy" aria-hidden="true"></i> Copy
+      </button>
+    </div>
+
+    <p style="font-size:12px; color:var(--color-text-secondary); margin:0;">
+      <i class="ti ti-info-circle" aria-hidden="true" style="vertical-align:-2px;"></i>
+      This key contains a unique random salt — every generation produces a different code for the same duration.
+    </p>
+  </div>
+
+  <hr class="kg-sep">
+
+  <div class="kg-section">
+    <div class="kg-section-label"><i class="ti ti-shield-check" style="vertical-align:-2px; font-size:13px;" aria-hidden="true"></i> Verify a key</div>
+    <div class="kg-verify-row">
+      <input type="text" id="verify-input" placeholder="IDP-0365-XXXXXXXXXXXXXXXXXXXX" maxlength="60" />
+      <button class="kg-verify-btn" onclick="verifyKey()">
+        <i class="ti ti-check" aria-hidden="true"></i> Verify
+      </button>
+    </div>
+    <div class="kg-verify-result" id="verify-result"></div>
+  </div>
+
+  <hr class="kg-sep">
+
+  <div class="kg-history" id="history-section" style="display:none;">
+    <div class="kg-section-label" style="margin-bottom:6px;"><i class="ti ti-history" style="vertical-align:-2px; font-size:13px;" aria-hidden="true"></i> Generated this session</div>
+    <div id="history-list"></div>
+  </div>
+</div>
+
+<script>
+const ACT_KEY = "ITProAcademy2024SecretKey";
+let selectedDays = 30;
+let sessionHistory = [];
+
+function selectPreset(el) {
+  document.querySelectorAll('.kg-preset-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  selectedDays = parseInt(el.dataset.days);
+  document.getElementById('custom-days').value = '';
+}
+
+function onCustomInput() {
+  document.querySelectorAll('.kg-preset-btn').forEach(b => b.classList.remove('active'));
+  const v = parseInt(document.getElementById('custom-days').value);
+  if (!isNaN(v) && v > 0) selectedDays = v;
+}
+
+async function sha256hex(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function randomSalt(len) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const arr = new Uint8Array(len);
+  crypto.getRandomValues(arr);
+  return Array.from(arr).map(b => chars[b % chars.length]).join('');
+}
+
+async function generateCode(days) {
+  const salt = randomSalt(8);
+  const msg = `IDManager|${days}|${ACT_KEY}|${salt}`;
+  const hash = await sha256hex(msg);
+  const h = hash.slice(0, 16).toUpperCase();
+  return { code: `IDP-${String(days).padStart(4,'0')}-${h}-${salt}`, salt };
+}
+
+async function verifyCode(code) {
+  try {
+    const parts = code.trim().toUpperCase().split('-');
+    if (parts.length !== 4 || parts[0] !== 'IDP') return 0;
+    const days = parseInt(parts[1]);
+    const hPart = parts[2];
+    const salt = parts[3];
+    if (isNaN(days) || days < 1) return 0;
+    const msg = `IDManager|${days}|${ACT_KEY}|${salt}`;
+    const hash = await sha256hex(msg);
+    const expected = hash.slice(0, 16).toUpperCase();
+    return hPart === expected ? days : 0;
+  } catch(e) { return 0; }
+}
+
+function formatDate(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+function daysLabel(d) {
+  if (d === 30) return '30 days (1 month)';
+  if (d === 90) return '90 days (3 months)';
+  if (d === 180) return '180 days (6 months)';
+  if (d === 365) return '1 year (365 days)';
+  if (d === 730) return '2 years (730 days)';
+  if (d === 3650) return 'Lifetime (3650 days)';
+  return `${d} days`;
+}
+
+async function generateKey() {
+  const days = selectedDays;
+  if (!days || days < 1) return;
+  const { code } = await generateCode(days);
+  const today = new Date();
+  const expiry = new Date(today.getTime() + days * 86400000);
+
+  document.getElementById('r-duration').textContent = daysLabel(days);
+  document.getElementById('r-issued').textContent = formatDate(today);
+  document.getElementById('r-expires').textContent = formatDate(expiry);
+  document.getElementById('r-code').textContent = code;
+
+  const result = document.getElementById('result');
+  result.classList.add('visible');
+  result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  const copyBtn = document.getElementById('copy-btn');
+  copyBtn.classList.remove('copied');
+  copyBtn.innerHTML = '<i class="ti ti-copy" aria-hidden="true"></i> Copy';
+
+  sessionHistory.unshift({ code, days, expiry: formatDate(expiry) });
+  if (sessionHistory.length > 10) sessionHistory.pop();
+  renderHistory();
+}
+
+function renderHistory() {
+  const sec = document.getElementById('history-section');
+  const list = document.getElementById('history-list');
+  sec.style.display = 'block';
+  list.innerHTML = sessionHistory.map(h =>
+    `<div class="kg-history-item">
+      <span class="kg-history-code">${h.code}</span>
+      <span class="kg-badge kg-badge-blue">${daysLabel(h.days)}</span>
+      <span style="color:var(--color-text-secondary); white-space:nowrap; font-size:11px;">exp. ${h.expiry}</span>
+    </div>`
+  ).join('');
+}
+
+function copyCode() {
+  const code = document.getElementById('r-code').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.classList.add('copied');
+    btn.innerHTML = '<i class="ti ti-check" aria-hidden="true"></i> Copied!';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = '<i class="ti ti-copy" aria-hidden="true"></i> Copy';
+    }, 2000);
+  });
+}
+
+async function verifyKey() {
+  const code = document.getElementById('verify-input').value.trim();
+  const res = document.getElementById('verify-result');
+  if (!code) { res.className = 'kg-verify-result invalid'; res.style.display = 'block'; res.textContent = 'Please enter a code to verify.'; return; }
+  const days = await verifyCode(code);
+  if (days > 0) {
+    const expiry = new Date(Date.now() + days * 86400000);
+    res.className = 'kg-verify-result valid';
+    res.innerHTML = `<i class="ti ti-circle-check" aria-hidden="true"></i> Valid code — ${daysLabel(days)}. If activated today, expires ${formatDate(expiry)}.`;
+  } else {
+    res.className = 'kg-verify-result invalid';
+    res.innerHTML = `<i class="ti ti-circle-x" aria-hidden="true"></i> Invalid code — not recognised.`;
+  }
+  res.style.display = 'block';
+}
+
+document.getElementById('verify-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') verifyKey();
+});
+</script>
